@@ -8,6 +8,7 @@ function MainFeature() {
   const [activeBoard, setActiveBoard] = useState('main')
   const [draggedTask, setDraggedTask] = useState(null)
   const [showTaskModal, setShowTaskModal] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [selectedTask, setSelectedTask] = useState(null)
   const [newTask, setNewTask] = useState({
     title: '',
@@ -134,6 +135,11 @@ function MainFeature() {
       return
     }
 
+    if (!newTask.title.trim()) {
+      toast.error('Task title is required')
+      return
+    }
+
     if (!newTask.assignee) {
       toast.error('Please assign the task to a team member')
       return
@@ -159,6 +165,7 @@ function MainFeature() {
     })
 
     toast.success('Task created successfully!')
+    setShowCreateModal(false)
   }
 
   const handleDeleteTask = (taskId, columnId) => {
@@ -183,6 +190,14 @@ function MainFeature() {
         </div>
         
         <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
+          >
+            <ApperIcon name="Plus" className="w-5 h-5" />
+            <span>Add New Task</span>
+          </button>
+          
           <select 
             value={activeBoard} 
             onChange={(e) => setActiveBoard(e.target.value)}
@@ -192,49 +207,6 @@ function MainFeature() {
             <option value="website">Website Redesign</option>
             <option value="mobile">Mobile App</option>
           </select>
-        </div>
-      </div>
-
-      {/* Quick Task Creation */}
-      <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl border border-surface-200/50 dark:border-surface-700/50 p-4 lg:p-6">
-        <h3 className="text-lg font-semibold text-surface-900 dark:text-white mb-4">Create New Task</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
-          <input
-            type="text"
-            placeholder="Task title..."
-            value={newTask.title}
-            onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
-            className="col-span-1 lg:col-span-2 px-4 py-2 rounded-xl border border-surface-300 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-900 dark:text-white placeholder-surface-500 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
-          />
-          
-          <select
-            value={newTask.priority}
-            onChange={(e) => setNewTask(prev => ({ ...prev, priority: e.target.value }))}
-            className="px-4 py-2 rounded-xl border border-surface-300 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
-          >
-            <option value="low">Low Priority</option>
-            <option value="medium">Medium Priority</option>
-            <option value="high">High Priority</option>
-          </select>
-          
-          <select
-            value={newTask.assignee}
-            onChange={(e) => setNewTask(prev => ({ ...prev, assignee: e.target.value }))}
-            className="px-4 py-2 rounded-xl border border-surface-300 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
-          >
-            <option value="">Assign to...</option>
-            {teamMembers.map(member => (
-              <option key={member} value={member}>{member}</option>
-            ))}
-          </select>
-          
-          <button
-            onClick={handleCreateTask}
-            className="px-6 py-2 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
-          >
-            <ApperIcon name="Plus" className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Task</span>
-          </button>
         </div>
       </div>
 
@@ -324,6 +296,115 @@ function MainFeature() {
           </motion.div>
         ))}
       </div>
+
+      {/* Create Task Modal */}
+      <AnimatePresence>
+        {showCreateModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowCreateModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-surface-800 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-surface-900 dark:text-white">Create New Task</h3>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="text-surface-400 hover:text-surface-600 dark:hover:text-surface-300 transition-colors"
+                >
+                  <ApperIcon name="X" className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">Task Title *</label>
+                  <input
+                    type="text"
+                    placeholder="Enter task title..."
+                    value={newTask.title}
+                    onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-surface-300 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-900 dark:text-white placeholder-surface-500 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">Description</label>
+                  <textarea
+                    placeholder="Enter task description..."
+                    value={newTask.description}
+                    onChange={(e) => setNewTask(prev => ({ ...prev, description: e.target.value }))}
+                    rows={4}
+                    className="w-full px-4 py-3 rounded-xl border border-surface-300 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-900 dark:text-white placeholder-surface-500 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 resize-none"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">Priority</label>
+                    <select
+                      value={newTask.priority}
+                      onChange={(e) => setNewTask(prev => ({ ...prev, priority: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl border border-surface-300 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                    >
+                      <option value="low">Low Priority</option>
+                      <option value="medium">Medium Priority</option>
+                      <option value="high">High Priority</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">Due Date</label>
+                    <input
+                      type="date"
+                      value={newTask.dueDate}
+                      onChange={(e) => setNewTask(prev => ({ ...prev, dueDate: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl border border-surface-300 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">Assign To *</label>
+                  <select
+                    value={newTask.assignee}
+                    onChange={(e) => setNewTask(prev => ({ ...prev, assignee: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-surface-300 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                  >
+                    <option value="">Select team member...</option>
+                    {teamMembers.map(member => (
+                      <option key={member} value={member}>{member}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <button
+                    onClick={() => setShowCreateModal(false)}
+                    className="flex-1 px-6 py-3 border border-surface-300 dark:border-surface-600 text-surface-700 dark:text-surface-300 font-medium rounded-xl hover:bg-surface-50 dark:hover:bg-surface-700 transition-all duration-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateTask}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                  >
+                    Create Task
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Task Detail Modal */}
       <AnimatePresence>
