@@ -134,6 +134,11 @@ function MainFeature() {
       return
     }
 
+    if (!newTask.assignee) {
+      toast.error('Please assign the task to a team member')
+      return
+    }
+
     const task = {
       id: Date.now(),
       ...newTask,
